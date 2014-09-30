@@ -95,6 +95,46 @@ bool feature_opportunistic_resend;
 uint8_t feature_mavlink_framing;
 bool feature_rtscts;
 
+static void
+flip_led(void) {
+		static bool led = 1;
+
+		if(led) {
+				LED_ACTIVITY = LED_ON;
+				led = 0;
+		} else {
+				LED_ACTIVITY = LED_OFF;
+				led = 1;
+		}
+}
+
+static void
+transparent_serial_loop(void) {
+		for(;;) {
+				__pdata uint8_t rlen;
+				__xdata uint8_t rbuf[256];
+
+				// If we received something via the radio, turn around and send it out the serial port
+				if(radio_receive_packet(&rlen, rbuf)) {
+						serial_write_buf(rbuf, rlen);
+						flip_led();
+				}
+
+				// If we have received something via serial, transmit it
+				rlen = serial_read_available();
+				if(rlen) {
+						LED_RADIO = LED_ON;
+						if(serial_read_buf(rbuf, rlen))
+								radio_transmit(rlen, rbuf, 100000); // Testing 100000 * 16usec RTC ticks
+						LED_RADIO = LED_OFF;
+						radio_receiver_on();
+				}
+
+				// Give the AT command processor a chance to handle a command
+				at_command();
+		}
+}
+
 void
 main(void)
 {
@@ -129,6 +169,7 @@ main(void)
 	}
 
 	//tdm_serial_loop();
+	transparent_serial_loop();
 }
 
 void
