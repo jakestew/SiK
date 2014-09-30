@@ -51,13 +51,13 @@ __code const struct parameter_info {
 	param_t		default_value;
 } parameter_info[PARAM_MAX] = {
 	{"FORMAT", 		PARAM_FORMAT_CURRENT},
-	{"SERIAL_SPEED",	57}, // match APM default of 57600
-	{"AIR_SPEED",		64}, // relies on MAVLink flow control
-	{"NETID",		25},
+	{"SERIAL_SPEED",	115},
+	{"AIR_SPEED",		128},
+	{"NETID",		0},
 	{"TXPOWER",		0},
-	{"ECC",			1},
-	{"MAVLINK",		1},
-	{"OPPRESEND",		1},
+	{"ECC",			0},
+	{"MAVLINK",		0},
+	{"OPPRESEND",		0},
 	{"MIN_FREQ",		0},
 	{"MAX_FREQ",		0},
 	{"NUM_CHANNELS",	0},
@@ -65,7 +65,7 @@ __code const struct parameter_info {
 	{"LBT_RSSI",		0},
 	{"MANCHESTER",		0},
 	{"RTSCTS",		0},
-	{"MAX_WINDOW",		131}
+	{"MAX_WINDOW",		33}
 };
 
 /// In-RAM parameter store.
