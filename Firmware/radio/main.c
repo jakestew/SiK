@@ -38,9 +38,11 @@
 
 #include <stdarg.h>
 #include "radio.h"
-#include "tdm.h"
+//#include "tdm.h"
 #include "timer.h"
-#include "freq_hopping.h"
+//#include "freq_hopping.h"
+#define MAX_FREQ_CHANNELS 50
+__pdata uint8_t num_fh_channels;
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @name	Interrupt vector prototypes
@@ -126,7 +128,7 @@ main(void)
 		panic("failed to enable receiver");
 	}
 
-	tdm_serial_loop();
+	//tdm_serial_loop();
 }
 
 void
@@ -325,7 +327,7 @@ radio_init(void)
 	if (freq_max == freq_min) {
 		freq_max = freq_min + 1000000UL;
 	}
-
+/*
 	// get the duty cycle we will use
 	duty_cycle = param_get(PARAM_DUTY_CYCLE);
 	duty_cycle = constrain(duty_cycle, 0, 100);
@@ -338,7 +340,7 @@ radio_init(void)
 		lbt_rssi = constrain(lbt_rssi, 25, 220);
 	}
 	param_set(PARAM_LBT_RSSI, lbt_rssi);
-
+*/
 	// sanity checks
 	param_set(PARAM_MIN_FREQ, freq_min/1000);
 	param_set(PARAM_MAX_FREQ, freq_max/1000);
@@ -396,9 +398,9 @@ radio_init(void)
 #endif
 
 	// initialise frequency hopping system
-	fhop_init(param_get(PARAM_NETID));
+	//fhop_init(param_get(PARAM_NETID));
 
 	// initialise TDM system
-	tdm_init();
+	//tdm_init();
 }
 

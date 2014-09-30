@@ -41,7 +41,7 @@
 
 
 #include "radio.h"
-#include "tdm.h"
+//#include "tdm.h"
 #include <flash_layout.h>
 
 /// In-ROM parameter info table.
@@ -150,7 +150,7 @@ param_set(__data enum ParamID param, __pdata param_t value)
 		radio_set_transmit_power(value);
 		value = radio_get_transmit_power();
 		break;
-
+/*
 	case PARAM_DUTY_CYCLE:
 		// update duty cycle immediately
 		value = constrain(value, 0, 100);
@@ -174,7 +174,7 @@ param_set(__data enum ParamID param, __pdata param_t value)
 		feature_opportunistic_resend = value?true:false;
 		value = feature_opportunistic_resend?1:0;
 		break;
-
+*/
 	case PARAM_RTSCTS:
 		feature_rtscts = value?true:false;
 		value = feature_rtscts?1:0;
