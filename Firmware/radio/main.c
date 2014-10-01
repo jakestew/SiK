@@ -139,8 +139,8 @@ transparent_serial_loop(void) {
 			LED_RADIO = LED_ON;
 			if(serial_read_buf(rbuf, rlen))
 				radio_transmit(rlen, rbuf, 100000); // Testing 100000 * 16usec RTC ticks
-			LED_RADIO = LED_OFF;
 			radio_receiver_on();
+			LED_RADIO = LED_OFF;
 		}
 
 		// Give the AT command processor a chance to handle a command
