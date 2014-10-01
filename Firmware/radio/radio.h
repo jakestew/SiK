@@ -120,7 +120,7 @@ extern __code const char 		g_version_string[];	///< printable version string
 extern __code const char 		g_banner_string[];	///< printable startup banner string
 extern __pdata enum BoardFrequency	g_board_frequency;	///< board RF frequency from the bootloader
 extern __pdata uint8_t			g_board_bl_version;	///< bootloader version
-
+/*
 /// staticstics maintained by the radio code
 struct statistics {
 	uint8_t average_rssi;
@@ -128,7 +128,7 @@ struct statistics {
 	uint16_t receive_count;
 };
 __pdata extern struct statistics statistics, remote_statistics;
-
+*/
 struct error_counts {
 	uint16_t rx_errors;		///< count of packet receive errors
 	uint16_t tx_errors;		///< count of packet transmit errors

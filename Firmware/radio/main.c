@@ -87,7 +87,7 @@ static void radio_init(void);
 
 /// statistics for radio and serial errors
 __pdata struct error_counts errors;
-__pdata struct statistics statistics, remote_statistics;
+//__pdata struct statistics statistics, remote_statistics;
 
 /// optional features
 bool feature_golay;
@@ -97,42 +97,55 @@ bool feature_rtscts;
 
 static void
 flip_led(void) {
-		static bool led = 1;
+	static bool led = 1;
 
-		if(led) {
-				LED_ACTIVITY = LED_ON;
-				led = 0;
-		} else {
-				LED_ACTIVITY = LED_OFF;
-				led = 1;
-		}
+	if(led) {
+		LED_ACTIVITY = LED_ON;
+		led = 0;
+	} else {
+		LED_ACTIVITY = LED_OFF;
+		led = 1;
+	}
 }
 
 static void
 transparent_serial_loop(void) {
-		for(;;) {
-				__pdata uint8_t rlen;
-				__xdata uint8_t rbuf[256];
+	for(;;) {
+		__pdata uint8_t rlen;
+		__xdata uint8_t rbuf[256];
 
-				// If we received something via the radio, turn around and send it out the serial port
-				if(radio_receive_packet(&rlen, rbuf)) {
-						serial_write_buf(rbuf, rlen);
-						flip_led();
-				}
-
-				// If we have received something via serial, transmit it
-				rlen = serial_read_available();
-				if(rlen) {
-						LED_RADIO = LED_ON;
-						if(serial_read_buf(rbuf, rlen))
-								radio_transmit(rlen, rbuf, 100000); // Testing 100000 * 16usec RTC ticks
-						LED_RADIO = LED_OFF;
-						radio_receiver_on();
-				}
-
-				// Give the AT command processor a chance to handle a command
-				at_command();
+		// If we received something via the radio, turn around and send it out the serial port
+		if(radio_receive_packet(&rlen, rbuf)) {
+			if(at_testmode == AT_TEST_RSSI) {
+				printf("R%u N%u E%u T%u\n",
+					(unsigned)radio_last_rssi(),
+					(unsigned)radio_current_rssi(),
+					//(unsigned)errors.tx_errors,
+					(unsigned)errors.rx_errors,
+					//(unsigned)errors.serial_tx_overflow,
+					//(unsigned)errors.serial_rx_overflow,
+					//(unsigned)errors.corrected_errors,
+					//(unsigned)errors.corrected_packets,
+					(int)radio_temperature());
+			} else {
+				serial_write_buf(rbuf, rlen);
+			}
+			flip_led();
 		}
+
+		// If we have received something via serial, transmit it
+		rlen = serial_read_available();
+		if(rlen) {
+			LED_RADIO = LED_ON;
+			if(serial_read_buf(rbuf, rlen))
+				radio_transmit(rlen, rbuf, 100000); // Testing 100000 * 16usec RTC ticks
+			LED_RADIO = LED_OFF;
+			radio_receiver_on();
+		}
+
+		// Give the AT command processor a chance to handle a command
+		at_command();
+	}
 }
 
 void
