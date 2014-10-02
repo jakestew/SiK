@@ -43,6 +43,7 @@
 //#include "freq_hopping.h"
 #define MAX_FREQ_CHANNELS 50
 __pdata uint8_t num_fh_channels;
+#define TX_TIMEOUT_TICKS (100000 / 16) // 0.1sec
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @name	Interrupt vector prototypes
@@ -138,7 +139,7 @@ transparent_serial_loop(void) {
 		if(rlen) {
 			LED_RADIO = LED_ON;
 			if(serial_read_buf(rbuf, rlen))
-				radio_transmit(rlen, rbuf, 100000); // Testing 100000 * 16usec RTC ticks
+				radio_transmit(rlen, rbuf, TX_TIMEOUT_TICKS);
 			radio_receiver_on();
 			LED_RADIO = LED_OFF;
 		}
