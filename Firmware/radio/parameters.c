@@ -52,8 +52,8 @@ __code const struct parameter_info {
 } parameter_info[PARAM_MAX] = {
 	{"FORMAT", 		PARAM_FORMAT_CURRENT},
 	{"SERIAL_SPEED",	115},
-	{"AIR_SPEED",		128},
-	{"NETID",		0},
+	{"AIR_SPEED",		32},
+	{"NETID",		0xF0F0},
 	{"TXPOWER",		0},
 	{"ECC",			0},
 	{"MAVLINK",		0},
