@@ -92,8 +92,8 @@ __pdata struct error_counts errors;
 
 /// optional features
 bool feature_golay;
-bool feature_opportunistic_resend;
-uint8_t feature_mavlink_framing;
+//bool feature_opportunistic_resend;
+//uint8_t feature_mavlink_framing;
 bool feature_rtscts;
 
 static void
@@ -156,8 +156,8 @@ main(void)
 		param_default();
 
 	// setup boolean features
-	feature_mavlink_framing = param_get(PARAM_MAVLINK);
-	feature_opportunistic_resend = param_get(PARAM_OPPRESEND)?true:false;
+	//feature_mavlink_framing = param_get(PARAM_MAVLINK);
+	//feature_opportunistic_resend = param_get(PARAM_OPPRESEND)?true:false;
 	feature_golay = param_get(PARAM_ECC)?true:false;
 	feature_rtscts = param_get(PARAM_RTSCTS)?true:false;
 
@@ -287,7 +287,7 @@ static void
 radio_init(void)
 {
 	__pdata uint32_t freq_min, freq_max;
-	__pdata uint32_t channel_spacing;
+	//__pdata uint32_t channel_spacing;
 	__pdata uint8_t txpower;
 
 	// Do generic PHY initialisation
@@ -389,7 +389,7 @@ radio_init(void)
 	param_set(PARAM_MIN_FREQ, freq_min/1000);
 	param_set(PARAM_MAX_FREQ, freq_max/1000);
 	param_set(PARAM_NUM_CHANNELS, num_fh_channels);
-
+/*
 	channel_spacing = (freq_max - freq_min) / (num_fh_channels+2);
 
 	// add half of the channel spacing, to ensure that we are well
@@ -416,7 +416,7 @@ radio_init(void)
 
 	// start on a channel chosen by network ID
 	radio_set_channel(param_get(PARAM_NETID) % num_fh_channels);
-
+*/
 	// And intilise the radio with them.
 	if (!radio_configure(param_get(PARAM_AIR_SPEED)) &&
 	    !radio_configure(param_get(PARAM_AIR_SPEED)) &&
