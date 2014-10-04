@@ -97,23 +97,23 @@ uint8_t feature_mavlink_framing;
 bool feature_rtscts;
 
 static void
-flip_led(void) {
-	static bool led = 1;
-
-	if(led) {
-		LED_ACTIVITY = LED_ON;
-		led = 0;
-	} else {
-		LED_ACTIVITY = LED_OFF;
-		led = 1;
-	}
-}
-
-static void
 transparent_serial_loop(void) {
 	for(;;) {
 		__pdata uint8_t rlen;
 		__xdata uint8_t rbuf[256];
+
+		// If we have received something via serial, transmit it
+		rlen = serial_read_available();
+		if(rlen) {
+			LED_RADIO = LED_ON;
+			if(serial_read_buf(rbuf, rlen))
+				radio_transmit(rlen, rbuf, TX_TIMEOUT_TICKS);
+			radio_receiver_on();
+			LED_RADIO = LED_OFF;
+		}
+
+		if(radio_preamble_detected())
+			LED_ACTIVITY = LED_ON;
 
 		// If we received something via the radio, turn around and send it out the serial port
 		if(radio_receive_packet(&rlen, rbuf)) {
@@ -131,17 +131,7 @@ transparent_serial_loop(void) {
 			} else {
 				serial_write_buf(rbuf, rlen);
 			}
-			flip_led();
-		}
-
-		// If we have received something via serial, transmit it
-		rlen = serial_read_available();
-		if(rlen) {
-			LED_RADIO = LED_ON;
-			if(serial_read_buf(rbuf, rlen))
-				radio_transmit(rlen, rbuf, TX_TIMEOUT_TICKS);
-			radio_receiver_on();
-			LED_RADIO = LED_OFF;
+			LED_ACTIVITY = LED_OFF;
 		}
 
 		// Give the AT command processor a chance to handle a command
@@ -272,8 +262,7 @@ hardware_init(void)
 	// global interrupt enable
 	EA = 1;
 
-	// Turn on the 'radio running' LED and turn off the bootloader LED
-	LED_RADIO = LED_ON;
+	// Turn off the bootloader LED
 	LED_BOOTLOADER = LED_OFF;
 
 	// ADC system initialise for temp sensor
