@@ -298,6 +298,58 @@ static bool
 radio_transmit_simple(__data uint8_t length, __xdata uint8_t * __pdata buf, __pdata uint16_t timeout_ticks)
 {
 	__pdata uint16_t tstart;
+
+	register_write(EZRADIOPRO_TRANSMIT_PACKET_LENGTH, length);
+
+	// put packet in the FIFO
+	radio_write_transmit_fifo(length, buf);
+
+	// enable just the packet sent IRQ
+	register_write(EZRADIOPRO_INTERRUPT_ENABLE_1, EZRADIOPRO_ENPKSENT);
+	register_write(EZRADIOPRO_INTERRUPT_ENABLE_2, 0);
+
+	// read Si4432 interrupts to clear
+	register_read(EZRADIOPRO_INTERRUPT_STATUS_1);
+	register_read(EZRADIOPRO_INTERRUPT_STATUS_2);
+
+	preamble_detected = 0;
+
+	// start TX
+	register_write(EZRADIOPRO_OPERATING_AND_FUNCTION_CONTROL_1, EZRADIOPRO_TXON | EZRADIOPRO_XTON);
+
+	// wait for IRQ or timeout
+	tstart = timer2_tick();
+	while ((uint16_t)(timer2_tick() - tstart) < timeout_ticks) {
+		if(!IRQ)
+			return true;
+	}
+
+	// transmit timeout ... clear the FIFO
+	debug("TX timeout %u ts=%u tn=%u len=%u\n",
+	       timeout_ticks,
+	       tstart,
+	       timer2_tick(),
+	       (unsigned)length);
+	if (errors.tx_errors != 0xFFFF) {
+		errors.tx_errors++;
+	}
+
+	return false;
+}
+
+#if 0
+// simple transmit with no golay
+//
+// @param length		number of data bytes to send
+// @param timeout_ticks		number of 16usec RTC ticks to allow
+//				for the send
+//
+// @return	    true if packet sent successfully
+//
+static bool
+radio_transmit_simple(__data uint8_t length, __xdata uint8_t * __pdata buf, __pdata uint16_t timeout_ticks)
+{
+	__pdata uint16_t tstart;
 	bool transmit_started;
 	__data uint8_t n;
 
@@ -410,7 +462,7 @@ radio_transmit_simple(__data uint8_t length, __xdata uint8_t * __pdata buf, __pd
 
 	return false;
 }
-
+#endif
 
 // start transmitting a packet from the transmit FIFO
 //
