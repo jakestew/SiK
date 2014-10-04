@@ -98,10 +98,11 @@ bool feature_rtscts;
 
 static void
 transparent_serial_loop(void) {
-	for(;;) {
-		__pdata uint8_t rlen;
-		__xdata uint8_t rbuf[256];
+	__pdata uint8_t rlen;
+	__xdata uint8_t rbuf[256];
+	__pdata uint16_t tstart = 0;
 
+	for(;;) {
 		// If we have received something via serial, transmit it
 		rlen = serial_read_available();
 		if(rlen) {
@@ -112,8 +113,11 @@ transparent_serial_loop(void) {
 			LED_RADIO = LED_OFF;
 		}
 
-		if(radio_preamble_detected())
+		if(radio_preamble_detected()) {
 			LED_ACTIVITY = LED_ON;
+			tstart = timer2_tick();
+		} else if((uint16_t)(timer2_tick() - tstart) > TX_TIMEOUT_TICKS) // RX LED timeout
+			LED_ACTIVITY = LED_OFF;
 
 		// If we received something via the radio, turn around and send it out the serial port
 		if(radio_receive_packet(&rlen, rbuf)) {
@@ -406,11 +410,11 @@ radio_init(void)
 	debug("freq low=%lu high=%lu spacing=%lu\n", 
 	       freq_min, freq_min+(num_fh_channels*channel_spacing), 
 	       channel_spacing);
-
+*/
 	// set the frequency and channel spacing
 	// change base freq based on netid
 	radio_set_frequency(freq_min);
-
+/*
 	// set channel spacing
 	radio_set_channel_spacing(channel_spacing);
 
