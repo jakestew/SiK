@@ -842,8 +842,7 @@ radio_configure(__pdata uint8_t air_rate)
 	register_write(EZRADIOPRO_TX_FIFO_CONTROL_2, TX_FIFO_THRESHOLD_LOW);
 	register_write(EZRADIOPRO_RX_FIFO_CONTROL, RX_FIFO_THRESHOLD_HIGH);
 
-//	settings.preamble_length = 16;
-	settings.preamble_length = 6;
+	settings.preamble_length = 16;
 
 	register_write(EZRADIOPRO_PREAMBLE_LENGTH, settings.preamble_length); // nibbles 
 	register_write(EZRADIOPRO_PREAMBLE_DETECTION_CONTROL, 5<<3); // 5 nibbles
