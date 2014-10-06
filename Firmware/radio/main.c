@@ -44,9 +44,9 @@
 #define MAX_FREQ_CHANNELS 50
 __pdata uint8_t num_fh_channels;
 
-#define TX_TIMEOUT_TICKS (100000 / 16) // 0.1sec
-#define RX_LED_OFF_TICKS (100000 / 16) // 0.1sec
-#define SERIAL_TO_RADIO_TICKS (10000 / 16) // 0.01sec
+#define TX_TIMEOUT_TICKS (100000 / 16)		// 100ms
+#define RX_TIMEOUT_TICKS (100000 / 16)		// 100ms
+#define SERIAL_TO_RADIO_TICKS (1000 / 16)	// 1ms
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @name	Interrupt vector prototypes
@@ -101,54 +101,65 @@ bool feature_rtscts;
 
 static void
 transparent_serial_loop(void) {
-	__pdata uint16_t now;
+	__pdata uint16_t preamble_time = 0;
+	bool tx_enabled = false;
 	__pdata uint8_t len;
 	__pdata uint8_t old_len = 0;
 	__pdata uint16_t serial_time = 0;
 	__xdata uint8_t buf[256];
-	__pdata uint16_t led_time = 0;
 	__pdata uint8_t rssi = 0;
 	__pdata uint8_t noise = 0;
 
 	for(;;) {
-		now = timer2_tick();
 
-		len = serial_read_available();
-		if(len != old_len)
-			serial_time = now;
-		old_len = len;
-
-		if(len && timer2_tick() - serial_time > SERIAL_TO_RADIO_TICKS) {
-			LED_RADIO = LED_ON;
-			if(serial_read_buf(buf, len))
-				radio_transmit(len, buf, TX_TIMEOUT_TICKS);
-			radio_receiver_on();
-			LED_RADIO = LED_OFF;
-		}
-
+		// If a preamble is detected, don't transmit for a while
 		if(radio_preamble_detected()) {
 			LED_ACTIVITY = LED_ON;
-			led_time = now;
-		} else if(timer2_tick() - led_time > RX_LED_OFF_TICKS)
+			preamble_time = timer2_tick();
+			tx_enabled = false;
+		} else if(timer2_tick() - preamble_time > RX_TIMEOUT_TICKS) {
+			tx_enabled = true;
 			LED_ACTIVITY = LED_OFF;
+		}
+
+		if(tx_enabled) {
+			len = serial_read_available();
+			if(len != old_len)
+				serial_time = timer2_tick();
+			old_len = len;
+
+			// If no more data come from the serial port after a short time, transmit
+			if(len && timer2_tick() - serial_time > SERIAL_TO_RADIO_TICKS) {
+				LED_RADIO = LED_ON;
+				if(serial_read_buf(buf, len)) {
+//					buf[len] = rssi;	// Add a RSSI byte
+//					buf[len + 1] = noise;	// Add a noise level byte
+//					radio_transmit(len + 2, buf, TX_TIMEOUT_TICKS);
+					radio_transmit(len, buf, TX_TIMEOUT_TICKS);
+				}
+				radio_receiver_on();
+				LED_RADIO = LED_OFF;
+			}
+		}
 
 		// If we received something via the radio, send it out the serial port
 		if(radio_receive_packet(&len, buf)) {
 			rssi = radio_last_rssi();
 			noise = radio_current_rssi();
 			if(at_testmode == AT_TEST_RSSI) {
-				printf("R%u N%u E%u T%u\n",
+				printf("RS%u NO%u ER%u CE%u CP%u\n",
 					rssi,
 					noise,
-					//errors.tx_errors,
 					errors.rx_errors,
-					//errors.serial_tx_overflow,
-					//errors.serial_rx_overflow,
-					//errors.corrected_errors,
-					//errors.corrected_packets,
-					radio_temperature());
-			} else
+					errors.corrected_errors,
+					errors.corrected_packets);
+			} else {
+//				buf[len] = rssi;	// Add a RSSI byte
+//				buf[len + 1] = noise;	// Add a noise level byte
+//				serial_write_buf(buf, len + 2);
 				serial_write_buf(buf, len);
+			}
+			tx_enabled = true;
 			LED_ACTIVITY = LED_OFF;
 		}
 
