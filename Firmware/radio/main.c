@@ -43,7 +43,10 @@
 //#include "freq_hopping.h"
 #define MAX_FREQ_CHANNELS 50
 __pdata uint8_t num_fh_channels;
+
 #define TX_TIMEOUT_TICKS (100000 / 16) // 0.1sec
+#define RX_LED_OFF_TICKS (100000 / 16) // 0.1sec
+#define SERIAL_TO_RADIO_TICKS (10000 / 16) // 0.01sec
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @name	Interrupt vector prototypes
@@ -98,43 +101,54 @@ bool feature_rtscts;
 
 static void
 transparent_serial_loop(void) {
-	__pdata uint8_t rlen;
-	__xdata uint8_t rbuf[256];
-	__pdata uint16_t tstart = 0;
+	__pdata uint16_t now;
+	__pdata uint8_t len;
+	__pdata uint8_t old_len = 0;
+	__pdata uint16_t serial_time = 0;
+	__xdata uint8_t buf[256];
+	__pdata uint16_t led_time = 0;
+	__pdata uint8_t rssi = 0;
+	__pdata uint8_t noise = 0;
 
 	for(;;) {
-		// If we have received something via serial, transmit it
-		rlen = serial_read_available();
-		if(rlen) {
+		now = timer2_tick();
+
+		len = serial_read_available();
+		if(len != old_len)
+			serial_time = now;
+		old_len = len;
+
+		if(len && timer2_tick() - serial_time > SERIAL_TO_RADIO_TICKS) {
 			LED_RADIO = LED_ON;
-			if(serial_read_buf(rbuf, rlen))
-				radio_transmit(rlen, rbuf, TX_TIMEOUT_TICKS);
+			if(serial_read_buf(buf, len))
+				radio_transmit(len, buf, TX_TIMEOUT_TICKS);
 			radio_receiver_on();
 			LED_RADIO = LED_OFF;
 		}
 
 		if(radio_preamble_detected()) {
 			LED_ACTIVITY = LED_ON;
-			tstart = timer2_tick();
-		} else if((uint16_t)(timer2_tick() - tstart) > TX_TIMEOUT_TICKS) // RX LED timeout
+			led_time = now;
+		} else if(timer2_tick() - led_time > RX_LED_OFF_TICKS)
 			LED_ACTIVITY = LED_OFF;
 
-		// If we received something via the radio, turn around and send it out the serial port
-		if(radio_receive_packet(&rlen, rbuf)) {
+		// If we received something via the radio, send it out the serial port
+		if(radio_receive_packet(&len, buf)) {
+			rssi = radio_last_rssi();
+			noise = radio_current_rssi();
 			if(at_testmode == AT_TEST_RSSI) {
 				printf("R%u N%u E%u T%u\n",
-					(unsigned)radio_last_rssi(),
-					(unsigned)radio_current_rssi(),
-					//(unsigned)errors.tx_errors,
-					(unsigned)errors.rx_errors,
-					//(unsigned)errors.serial_tx_overflow,
-					//(unsigned)errors.serial_rx_overflow,
-					//(unsigned)errors.corrected_errors,
-					//(unsigned)errors.corrected_packets,
-					(int)radio_temperature());
-			} else {
-				serial_write_buf(rbuf, rlen);
-			}
+					rssi,
+					noise,
+					//errors.tx_errors,
+					errors.rx_errors,
+					//errors.serial_tx_overflow,
+					//errors.serial_rx_overflow,
+					//errors.corrected_errors,
+					//errors.corrected_packets,
+					radio_temperature());
+			} else
+				serial_write_buf(buf, len);
 			LED_ACTIVITY = LED_OFF;
 		}
 
@@ -291,7 +305,7 @@ static void
 radio_init(void)
 {
 	__pdata uint32_t freq_min, freq_max;
-	//__pdata uint32_t channel_spacing;
+	__pdata uint32_t channel_spacing;
 	__pdata uint8_t txpower;
 
 	// Do generic PHY initialisation
@@ -393,13 +407,13 @@ radio_init(void)
 	param_set(PARAM_MIN_FREQ, freq_min/1000);
 	param_set(PARAM_MAX_FREQ, freq_max/1000);
 	param_set(PARAM_NUM_CHANNELS, num_fh_channels);
-/*
+
 	channel_spacing = (freq_max - freq_min) / (num_fh_channels+2);
 
 	// add half of the channel spacing, to ensure that we are well
 	// away from the edges of the allowed range
 	freq_min += channel_spacing/2;
-
+/*
 	// add another offset based on network ID. This means that
 	// with different network IDs we will have much lower
 	// interference
@@ -414,13 +428,14 @@ radio_init(void)
 	// set the frequency and channel spacing
 	// change base freq based on netid
 	radio_set_frequency(freq_min);
-/*
+
 	// set channel spacing
 	radio_set_channel_spacing(channel_spacing);
 
 	// start on a channel chosen by network ID
-	radio_set_channel(param_get(PARAM_NETID) % num_fh_channels);
-*/
+	//radio_set_channel(param_get(PARAM_NETID) % num_fh_channels);
+	radio_set_channel(0);
+
 	// And intilise the radio with them.
 	if (!radio_configure(param_get(PARAM_AIR_SPEED)) &&
 	    !radio_configure(param_get(PARAM_AIR_SPEED)) &&
