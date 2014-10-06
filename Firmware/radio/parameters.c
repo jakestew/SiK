@@ -52,7 +52,7 @@ __code const struct parameter_info {
 } parameter_info[PARAM_MAX] = {
 	{"FORMAT", 		PARAM_FORMAT_CURRENT},
 	{"SERIAL_SPEED",	115},
-	{"AIR_SPEED",		32},
+	{"AIR_SPEED",		24},
 	{"NETID",		0xF0F0},
 	{"TXPOWER",		0},
 	{"ECC",			0},
@@ -61,11 +61,11 @@ __code const struct parameter_info {
 	{"MIN_FREQ",		0},
 	{"MAX_FREQ",		0},
 	{"NUM_CHANNELS",	0},
-	{"DUTY_CYCLE",		100},
+	{"DUTY_CYCLE",		0},
 	{"LBT_RSSI",		0},
 	{"MANCHESTER",		0},
 	{"RTSCTS",		0},
-	{"MAX_WINDOW",		33}
+	{"MAX_WINDOW",		0}
 };
 
 /// In-RAM parameter store.

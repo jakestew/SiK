@@ -464,8 +464,8 @@ static const __code struct {
 	{9,   0x96, 0x00}, // 9600
 	{19,  0x60, 0x01}, // 19200
 	{38,  0xb0, 0x01}, // 38400
-	{57,  0x2b, 0x08}, // 57600 - default
-	{115, 0x96, 0x08}, // 115200
+	{57,  0x2b, 0x08}, // 57600
+	{115, 0x96, 0x08}, // 115200 - default
 	{230, 0xcb, 0x08}, // 230400
 };
 
@@ -498,7 +498,7 @@ void serial_device_set_speed(register uint8_t speed)
 		}
 	}
 	if (i == num_rates) {
-		i = 6; // 57600 default
+		i = 7; // 115200 default
 	}
 
 	// set the rates in the UART
