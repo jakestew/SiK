@@ -46,7 +46,7 @@ __pdata uint8_t num_fh_channels;
 
 #define TX_TIMEOUT_TICKS (100000 / 16)		// 100ms
 #define RX_TIMEOUT_TICKS (100000 / 16)		// 100ms
-#define SERIAL_TO_RADIO_TICKS (1000 / 16)	// 1ms
+#define SERIAL_TIMEOUT_TICKS (1000 / 16)	// 1ms
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @name	Interrupt vector prototypes
@@ -96,7 +96,7 @@ __pdata struct error_counts errors;
 /// optional features
 bool feature_golay;
 //bool feature_opportunistic_resend;
-//uint8_t feature_mavlink_framing;
+uint8_t feature_mavlink_framing;
 bool feature_rtscts;
 
 static void
@@ -129,12 +129,13 @@ transparent_serial_loop(void) {
 			old_len = len;
 
 			// If no more data come from the serial port after a short time, transmit
-			if(len && timer2_tick() - serial_time > SERIAL_TO_RADIO_TICKS) {
+			if(len && timer2_tick() - serial_time > SERIAL_TIMEOUT_TICKS) {
 				LED_RADIO = LED_ON;
 				if(serial_read_buf(buf, len)) {
-//					buf[len] = rssi;	// Add a RSSI byte
-//					buf[len + 1] = noise;	// Add a noise level byte
-//					radio_transmit(len + 2, buf, TX_TIMEOUT_TICKS);
+					if(feature_mavlink_framing == 1) {	// Remote RSSI monitoring
+						buf[len++] = rssi;		// Add a RSSI byte
+						buf[len++] = noise;		// Add a noise level byte
+					}
 					radio_transmit(len, buf, TX_TIMEOUT_TICKS);
 				}
 				radio_receiver_on();
@@ -154,9 +155,10 @@ transparent_serial_loop(void) {
 					errors.corrected_errors,
 					errors.corrected_packets);
 			} else {
-//				buf[len] = rssi;	// Add a RSSI byte
-//				buf[len + 1] = noise;	// Add a noise level byte
-//				serial_write_buf(buf, len + 2);
+				if(feature_mavlink_framing == 2) {	// Local RSSI monitoring
+					buf[len++] = rssi;		// Add a RSSI byte
+					buf[len++] = noise;		// Add a noise level byte
+				}
 				serial_write_buf(buf, len);
 			}
 			tx_enabled = true;
@@ -185,7 +187,7 @@ main(void)
 		param_default();
 
 	// setup boolean features
-	//feature_mavlink_framing = param_get(PARAM_MAVLINK);
+	feature_mavlink_framing = param_get(PARAM_MAVLINK);
 	//feature_opportunistic_resend = param_get(PARAM_OPPRESEND)?true:false;
 	feature_golay = param_get(PARAM_ECC)?true:false;
 	feature_rtscts = param_get(PARAM_RTSCTS)?true:false;

@@ -164,12 +164,12 @@ param_set(__data enum ParamID param, __pdata param_t value)
 		}
 		lbt_rssi = value;
 		break;
-
+*/
 	case PARAM_MAVLINK:
 		feature_mavlink_framing = (uint8_t) value;
 		value = feature_mavlink_framing;
 		break;
-
+/*
 	case PARAM_OPPRESEND:
 		feature_opportunistic_resend = value?true:false;
 		value = feature_opportunistic_resend?1:0;
