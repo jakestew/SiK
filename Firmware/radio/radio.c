@@ -770,7 +770,7 @@ radio_configure(__pdata uint8_t air_rate)
 	register_write(EZRADIOPRO_TX_FIFO_CONTROL_2, TX_FIFO_THRESHOLD_LOW);
 	register_write(EZRADIOPRO_RX_FIFO_CONTROL, RX_FIFO_THRESHOLD_HIGH);
 
-// Recommended Preamble Length with 20-Bit Detection Threshold
+	// Recommended Preamble Length with 20-Bit Detection Threshold
 #ifdef _BOARD_RFD900A
 	settings.preamble_length = 16; // (G)FSK AFC Enabled + Antenna Diversity Enabled
 #else
