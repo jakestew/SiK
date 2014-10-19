@@ -103,10 +103,11 @@ static void
 transparent_serial_loop(void) {
 	__pdata uint16_t rx_time = 0;
 	bool tx_enabled = false;
-	__pdata uint8_t len;
-	__pdata uint8_t old_len = 0;
+	__pdata uint16_t serial_len;
+	__pdata uint8_t old_serial_len = 0;
+	__pdata uint8_t radio_len;
 	__pdata uint16_t serial_time = 0;
-	__xdata uint8_t buf[256];
+	__xdata uint8_t buf[MAX_PACKET_LENGTH + 2]; // Local RSSI monitoring need two bytes
 	__pdata uint8_t rssi = 0;
 	__pdata uint8_t noise = 0;
 
@@ -122,30 +123,32 @@ transparent_serial_loop(void) {
 		}
 
 		if(tx_enabled) {
-			len = serial_read_available();
+			serial_len = serial_read_available();
+			if(serial_len > MAX_PACKET_LENGTH)
+				serial_len = MAX_PACKET_LENGTH - 2; // Remote RSSI monitoring need two bytes
 
-			if(len != old_len)
+			if(serial_len != old_serial_len)
 				serial_time = timer2_tick();
-			old_len = len;
+			old_serial_len = serial_len;
 
 			// If no more data come from the serial port after a short time
-			if(len && timer2_tick() - serial_time > SERIAL_TIMEOUT_TICKS) {
+			if(serial_len && timer2_tick() - serial_time > SERIAL_TIMEOUT_TICKS) {
 
 				// Read the serial port and transmit
-				if(serial_read_buf(buf, len)) {
+				if(serial_read_buf(buf, serial_len)) {
 					if(feature_mavlink_framing == 1) {	// Remote RSSI monitoring
-						buf[len++] = rssi;		// Add a RSSI byte
-						buf[len++] = noise;		// Add a noise level byte
+						buf[serial_len++] = rssi;	// Add a RSSI byte
+						buf[serial_len++] = noise;	// Add a noise level byte
 					}
 					LED_RADIO = LED_ON;
-					radio_transmit(len, buf, TX_TIMEOUT_TICKS);
+					radio_transmit(serial_len, buf, TX_TIMEOUT_TICKS);
 					LED_RADIO = LED_OFF;
 					radio_receiver_on();
 				}
 			}
 
 		// Else if we received something via the radio, send it out the serial port
-		} else if(radio_receive_packet(&len, buf)) {
+		} else if(radio_receive_packet(&radio_len, buf)) {
 			rssi = radio_last_rssi();
 			noise = radio_current_rssi();
 			if(at_testmode == AT_TEST_RSSI) {
@@ -157,10 +160,10 @@ transparent_serial_loop(void) {
 					errors.corrected_packets);
 			} else {
 				if(feature_mavlink_framing == 2) {	// Local RSSI monitoring
-					buf[len++] = rssi;		// Add a RSSI byte
-					buf[len++] = noise;		// Add a noise level byte
+					buf[radio_len++] = rssi;	// Add a RSSI byte
+					buf[radio_len++] = noise;	// Add a noise level byte
 				}
-				serial_write_buf(buf, len);
+				serial_write_buf(buf, radio_len);
 			}
 		}
 
