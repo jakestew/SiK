@@ -56,8 +56,8 @@ __code const struct parameter_info {
 	{"NETID",		0xF0F0},
 	{"TXPOWER",		0},
 	{"ECC",			0},
-	{"MAVLINK",		0},
-	{"OPPRESEND",		0},
+	{"RSSIMONITORING",	0},
+	{"SETCHANNEL",		0},
 	{"MIN_FREQ",		0},
 	{"MAX_FREQ",		0},
 	{"NUM_CHANNELS",	0},
@@ -109,13 +109,13 @@ param_check(__pdata enum ParamID id, __data uint32_t val)
 		break;
 
 	case PARAM_ECC:
-	case PARAM_OPPRESEND:
+	case PARAM_SETCHANNEL:
 		// boolean 0/1 only
 		if (val > 1)
 			return false;
 		break;
 
-	case PARAM_MAVLINK:
+	case PARAM_RSSIMONITORING:
 		if (val > 2)
 			return false;
 		break;
@@ -165,14 +165,14 @@ param_set(__data enum ParamID param, __pdata param_t value)
 		lbt_rssi = value;
 		break;
 */
-	case PARAM_MAVLINK:
-		feature_mavlink_framing = (uint8_t) value;
-		value = feature_mavlink_framing;
+	case PARAM_RSSIMONITORING:
+		feature_rssi_monitoring = (uint8_t) value;
+		value = feature_rssi_monitoring;
 		break;
 
-	case PARAM_OPPRESEND:
-		feature_opportunistic_resend = value?true:false;
-		value = feature_opportunistic_resend?1:0;
+	case PARAM_SETCHANNEL:
+		feature_set_channel = value?true:false;
+		value = feature_set_channel?1:0;
 		break;
 
 	case PARAM_RTSCTS:
@@ -238,7 +238,7 @@ __critical {
 
 	for (i = 0; i < sizeof(parameter_values); i++) {
 		if (!param_check(i, parameter_values[i].val)) {
-			parameter_values[i].val = parameter_info[i].default_value;
+			parameter_values[i].val = 	parameter_info[i].default_value;
 		}
 	}
 

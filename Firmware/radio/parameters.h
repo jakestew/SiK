@@ -52,8 +52,8 @@ enum ParamID {
         PARAM_NETID,			// network ID
         PARAM_TXPOWER,			// transmit power (dBm)
         PARAM_ECC,			// ECC using golay encoding
-	PARAM_MAVLINK,			// MAVLink framing, 0=ignore, 1=use, 2=rc-override
-	PARAM_OPPRESEND,		// opportunistic resend
+	PARAM_RSSIMONITORING,		// RSSI monitoring, 0=none, 1=remote, 2=local
+	PARAM_SETCHANNEL,		// The last byte of each serial frame is used to set the radio channel
 	PARAM_MIN_FREQ,			// min frequency in MHz
 	PARAM_MAX_FREQ,			// max frequency in MHz
 	PARAM_NUM_CHANNELS,		// number of hopping channels

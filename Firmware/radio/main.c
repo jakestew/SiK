@@ -95,8 +95,8 @@ __pdata struct error_counts errors;
 
 /// optional features
 bool feature_golay;
-bool feature_opportunistic_resend;
-uint8_t feature_mavlink_framing;
+bool feature_set_channel;
+uint8_t feature_rssi_monitoring;
 bool feature_rtscts;
 
 static void
@@ -136,14 +136,14 @@ transparent_serial_loop(void) {
 
 				// Read the serial port and transmit
 				if(serial_read_buf(buf, serial_len)) {
-					if(feature_mavlink_framing == 1) {	// Remote RSSI monitoring
+					if(feature_rssi_monitoring == 1) {	// Remote RSSI monitoring
 						buf[serial_len++] = rssi;	// Add a RSSI byte
 						buf[serial_len++] = noise;	// Add a noise level byte
 					}
 					LED_RADIO = LED_ON;
-					radio_transmit(serial_len - feature_opportunistic_resend, buf, TX_TIMEOUT_TICKS);
+					radio_transmit(serial_len - feature_set_channel, buf, TX_TIMEOUT_TICKS);
 					LED_RADIO = LED_OFF;
-					if(feature_opportunistic_resend)
+					if(feature_set_channel)
 						radio_set_channel(buf[serial_len - 1]);
 					radio_receiver_on();
 				}
@@ -161,7 +161,7 @@ transparent_serial_loop(void) {
 					errors.corrected_errors,
 					errors.corrected_packets);
 			} else {
-				if(feature_mavlink_framing == 2) {	// Local RSSI monitoring
+				if(feature_rssi_monitoring == 2) {	// Local RSSI monitoring
 					buf[radio_len++] = rssi;	// Add a RSSI byte
 					buf[radio_len++] = noise;	// Add a noise level byte
 				}
@@ -191,8 +191,8 @@ main(void)
 		param_default();
 
 	// setup boolean features
-	feature_mavlink_framing = param_get(PARAM_MAVLINK);
-	feature_opportunistic_resend = param_get(PARAM_OPPRESEND)?true:false;
+	feature_rssi_monitoring = param_get(PARAM_RSSIMONITORING);
+	feature_set_channel = param_get(PARAM_SETCHANNEL)?true:false;
 	feature_golay = param_get(PARAM_ECC)?true:false;
 	feature_rtscts = param_get(PARAM_RTSCTS)?true:false;
 
