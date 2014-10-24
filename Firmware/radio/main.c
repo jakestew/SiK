@@ -95,7 +95,7 @@ __pdata struct error_counts errors;
 
 /// optional features
 bool feature_golay;
-//bool feature_opportunistic_resend;
+bool feature_opportunistic_resend;
 uint8_t feature_mavlink_framing;
 bool feature_rtscts;
 
@@ -141,8 +141,10 @@ transparent_serial_loop(void) {
 						buf[serial_len++] = noise;	// Add a noise level byte
 					}
 					LED_RADIO = LED_ON;
-					radio_transmit(serial_len, buf, TX_TIMEOUT_TICKS);
+					radio_transmit(serial_len - feature_opportunistic_resend, buf, TX_TIMEOUT_TICKS);
 					LED_RADIO = LED_OFF;
+					if(feature_opportunistic_resend)
+						radio_set_channel(buf[serial_len - 1]);
 					radio_receiver_on();
 				}
 			}
@@ -190,7 +192,7 @@ main(void)
 
 	// setup boolean features
 	feature_mavlink_framing = param_get(PARAM_MAVLINK);
-	//feature_opportunistic_resend = param_get(PARAM_OPPRESEND)?true:false;
+	feature_opportunistic_resend = param_get(PARAM_OPPRESEND)?true:false;
 	feature_golay = param_get(PARAM_ECC)?true:false;
 	feature_rtscts = param_get(PARAM_RTSCTS)?true:false;
 

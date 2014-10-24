@@ -169,12 +169,12 @@ param_set(__data enum ParamID param, __pdata param_t value)
 		feature_mavlink_framing = (uint8_t) value;
 		value = feature_mavlink_framing;
 		break;
-/*
+
 	case PARAM_OPPRESEND:
 		feature_opportunistic_resend = value?true:false;
 		value = feature_opportunistic_resend?1:0;
 		break;
-*/
+
 	case PARAM_RTSCTS:
 		feature_rtscts = value?true:false;
 		value = feature_rtscts?1:0;
