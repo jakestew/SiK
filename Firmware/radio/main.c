@@ -41,7 +41,7 @@
 //#include "tdm.h"
 #include "timer.h"
 //#include "freq_hopping.h"
-#define MAX_FREQ_CHANNELS 50
+#define MAX_FREQ_CHANNELS 200
 __pdata uint8_t num_fh_channels;
 
 #define TX_DELAY_TICKS (2000 / 16)		// 2ms
@@ -110,6 +110,7 @@ transparent_serial_loop(void) {
 	__xdata uint8_t buf[MAX_PACKET_LENGTH + 2]; // Local RSSI monitoring need two bytes
 	__pdata uint8_t rssi = 0;
 	__pdata uint8_t noise = 0;
+	__pdata uint8_t channel = 0;
 
 	for(;;) {
 
@@ -136,15 +137,25 @@ transparent_serial_loop(void) {
 
 				// Read the serial port and transmit
 				if(serial_read_buf(buf, serial_len)) {
-					if(feature_rssi_monitoring == 1) {	// Remote RSSI monitoring
+
+					// If this feature is enabled, the last byte of the serial
+					// frame is used to set the RF channel after transmit
+					if(feature_set_channel && serial_len > 1)
+						channel = buf[--serial_len];	// Cut the channel byte
+
+					// If this feature is enabled, transmit RSSI and noise level byte over the air
+					if(feature_rssi_monitoring == 1) {
 						buf[serial_len++] = rssi;	// Add a RSSI byte
 						buf[serial_len++] = noise;	// Add a noise level byte
 					}
+
 					LED_RADIO = LED_ON;
-					radio_transmit(serial_len - feature_set_channel, buf, TX_TIMEOUT_TICKS);
+					radio_transmit(serial_len, buf, TX_TIMEOUT_TICKS);
 					LED_RADIO = LED_OFF;
-					if(feature_set_channel)
-						radio_set_channel(buf[serial_len - 1]);
+
+					if(feature_set_channel && channel < num_fh_channels)
+						radio_set_channel(channel);
+
 					radio_receiver_on();
 				}
 			}
@@ -161,7 +172,9 @@ transparent_serial_loop(void) {
 					errors.corrected_errors,
 					errors.corrected_packets);
 			} else {
-				if(feature_rssi_monitoring == 2) {	// Local RSSI monitoring
+
+				// If this feature is enabled, transmit RSSI and noise level byte over serial
+				if(feature_rssi_monitoring == 2) {
 					buf[radio_len++] = rssi;	// Add a RSSI byte
 					buf[radio_len++] = noise;	// Add a noise level byte
 				}
@@ -425,12 +438,13 @@ radio_init(void)
 	param_set(PARAM_MAX_FREQ, freq_max/1000);
 	param_set(PARAM_NUM_CHANNELS, num_fh_channels);
 
-	channel_spacing = (freq_max - freq_min) / (num_fh_channels+2);
-
+	//channel_spacing = (freq_max - freq_min) / (num_fh_channels+2);
+	channel_spacing = (freq_max - freq_min) / (num_fh_channels - 1);
+/*
 	// add half of the channel spacing, to ensure that we are well
 	// away from the edges of the allowed range
 	freq_min += channel_spacing/2;
-/*
+
 	// add another offset based on network ID. This means that
 	// with different network IDs we will have much lower
 	// interference
