@@ -53,7 +53,7 @@ enum ParamID {
         PARAM_TXPOWER,			// transmit power (dBm)
         PARAM_ECC,			// ECC using golay encoding
 	PARAM_RSSIMONITORING,		// RSSI monitoring, 0=none, 1=remote, 2=local
-	PARAM_SETCHANNEL,		// The last byte of the serial frame is used to set the RF channel after transmit
+	PARAM_SETCHANNEL,		// The last byte of the serial frame is used to set the RF channel
 	PARAM_MIN_FREQ,			// min frequency in MHz
 	PARAM_MAX_FREQ,			// max frequency in MHz
 	PARAM_NUM_CHANNELS,		// number of hopping channels

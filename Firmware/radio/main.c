@@ -138,8 +138,8 @@ transparent_serial_loop(void) {
 				// Read the serial port and transmit
 				if(serial_read_buf(buf, serial_len)) {
 
-					// If this feature is enabled, the last byte of the serial
-					// frame is used to set the RF channel after transmit
+					// If this feature is enabled, the last byte of the
+					// serial frame is used to set the RF channel
 					if(feature_set_channel && serial_len > 1)
 						channel = buf[--serial_len];	// Cut the channel byte
 
@@ -149,12 +149,12 @@ transparent_serial_loop(void) {
 						buf[serial_len++] = noise;	// Add a noise level byte
 					}
 
+					if(feature_set_channel && channel < num_fh_channels)
+						radio_set_channel(channel);
+
 					LED_RADIO = LED_ON;
 					radio_transmit(serial_len, buf, TX_TIMEOUT_TICKS);
 					LED_RADIO = LED_OFF;
-
-					if(feature_set_channel && channel < num_fh_channels)
-						radio_set_channel(channel);
 
 					radio_receiver_on();
 				}
