@@ -141,9 +141,10 @@ transparent_serial_loop(void) {
 
 					// If this feature is enabled, the last two bytes of
 					// the serial frame are used to set the RF channel
-					if(feature_set_channel && serial_len > 2)
+					if(feature_set_channel && serial_len > 2) {
 						receive_channel = buf[--serial_len];	// Cut these bytes
 						transmit_channel = buf[--serial_len];
+					}
 
 					// If this feature is enabled, transmit RSSI and noise level byte over the air
 					if(feature_rssi_monitoring == 1) {
