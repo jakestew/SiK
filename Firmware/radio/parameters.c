@@ -52,7 +52,7 @@ __code const struct parameter_info {
 } parameter_info[PARAM_MAX] = {
 	{"FORMAT", 		PARAM_FORMAT_CURRENT},
 	{"SERIAL_SPEED",	115},
-	{"AIR_SPEED",		24},
+	{"AIR_SPEED",		32},
 	{"NETID",		0xF0F0},
 	{"TXPOWER",		0},
 	{"ECC",			0},
@@ -117,6 +117,11 @@ param_check(__pdata enum ParamID id, __data uint32_t val)
 
 	case PARAM_RSSIMONITORING:
 		if (val > 2)
+			return false;
+		break;
+
+	case PARAM_NUM_CHANNELS:
+		if (val < 2)
 			return false;
 		break;
 
