@@ -139,28 +139,47 @@ transparent_serial_loop(void) {
 				// Read the serial port and transmit
 				if(serial_read_buf(buf, serial_len)) {
 
-					// If this feature is enabled, the last two bytes of
-					// the serial frame are used to set the RF channel
-					if(feature_set_channel && serial_len > 2) {
-						receive_channel = buf[--serial_len];	// Cut these bytes
-						transmit_channel = buf[--serial_len];
+					if(feature_set_channel) {
+
+						// The last two bytes of the serial frame are used to set the RF channel
+						if(serial_len > 2) {
+							receive_channel = buf[--serial_len];	// Cut these bytes
+							transmit_channel = buf[--serial_len];
+
+							// If this feature is enabled, transmit RSSI and noise level byte over the air
+							if(feature_rssi_monitoring == 1) {
+								buf[serial_len++] = rssi;	// Add a RSSI byte
+								buf[serial_len++] = noise;	// Add a noise level byte
+							}
+
+							if(transmit_channel < num_fh_channels)
+								radio_set_channel(transmit_channel);
+
+							LED_RADIO = LED_ON;
+							radio_transmit(serial_len, buf, TX_TIMEOUT_TICKS);
+							LED_RADIO = LED_OFF;
+
+							if(receive_channel < num_fh_channels)
+								radio_set_channel(receive_channel);
+
+						// An one byte serial frame is used to get the RSSI of the channel
+						} else if(serial_len == 1) {
+							radio_set_channel(buf[0]);
+							buf[0] = radio_current_rssi();
+							serial_write_buf(buf, 1);
+						}
+
+					// No feature_set_channel
+					} else {
+						if(feature_rssi_monitoring == 1) {
+							buf[serial_len++] = rssi;
+							buf[serial_len++] = noise;
+						}
+
+						LED_RADIO = LED_ON;
+						radio_transmit(serial_len, buf, TX_TIMEOUT_TICKS);
+						LED_RADIO = LED_OFF;
 					}
-
-					// If this feature is enabled, transmit RSSI and noise level byte over the air
-					if(feature_rssi_monitoring == 1) {
-						buf[serial_len++] = rssi;	// Add a RSSI byte
-						buf[serial_len++] = noise;	// Add a noise level byte
-					}
-
-					if(feature_set_channel && transmit_channel < num_fh_channels)
-						radio_set_channel(transmit_channel);
-
-					LED_RADIO = LED_ON;
-					radio_transmit(serial_len, buf, TX_TIMEOUT_TICKS);
-					LED_RADIO = LED_OFF;
-
-					if(feature_set_channel && receive_channel < num_fh_channels)
-						radio_set_channel(receive_channel);
 
 					radio_receiver_on();
 				}
