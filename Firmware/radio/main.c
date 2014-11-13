@@ -126,8 +126,8 @@ transparent_serial_loop(void) {
 
 		if(tx_enabled) {
 			serial_len = serial_read_available();
-			if(serial_len > MAX_PACKET_LENGTH)
-				serial_len = MAX_PACKET_LENGTH - 2; // Remote RSSI monitoring need two bytes
+			if(serial_len > MAX_PACKET_LENGTH - 2) // Remote RSSI monitoring need two bytes
+				serial_len = MAX_PACKET_LENGTH - 2;
 
 			if(serial_len != old_serial_len)
 				serial_time = timer2_tick();
