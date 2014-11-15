@@ -1,13 +1,15 @@
-# Serveurperso branch specification
+# SiK - Firmware for SiLabs Si1000 ISM radios
 
- - This firmware version is intended for data streaming at low latency.
- - Time Division Duplex (TDD) and Frequency Hopping Spread Spectrum (FHSS) are completely removed.
+### Serveurperso branch specification
+
+ - This is a modified 3DR Radio firmware intended for real time data streaming with high frame rate and low latency.
+ - Original Time Division Duplex (TDD) and Frequency Hopping Spread Spectrum (FHSS) code are removed, resulting a huge performance improvement in this case.
  - It offers a easy access through serial port to all most interesting features of the Si4432 (EZRadioPRO transceiver).
  - Advantages over RFM22 are reliability, no CPU time consumed (on hardware UART) and no memory used (no library needed on Arduino).
  - Advantages over XBee are better latency performance, better frequency choice, no transmit duty cycle limitation and open source.
  - The 3DRRadio configurator tool can be used but some parameters are changed or removed.
 
-## Changes in features
+### Changes in features
 
  - "Baud", "Air Speed", "Net ID", "Tx Power", "ECC", "Min Freq", "Max Freq", "# of Channels", "RTS CTS" work as the master branch.
  - "Duty Cycle" and "LBT Rssi" are not currently used.
@@ -34,7 +36,7 @@
  - Valid values are 67 (0x43) for the 433MHz band, 71 (0x47) for the 470MHz band, 134 (0x86) for the 868MHz band, and 145 (0x91) for the 915MHz band.
  - Warning, the use of a different frequency band than that provided by the matching stage of your board results in a dramatic performance loss!
 
-# SiK - Firmware for SiLabs Si1000 ISM radios
+### End of Serveurperso branch specification
 
 For user documentation please see this site:
 
