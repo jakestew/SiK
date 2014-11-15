@@ -57,11 +57,11 @@ enum ParamID {
 	PARAM_MIN_FREQ,			// min frequency in MHz
 	PARAM_MAX_FREQ,			// max frequency in MHz
 	PARAM_NUM_CHANNELS,		// number of hopping channels
-	PARAM_DUTY_CYCLE,		// duty cycle (percentage)
-	PARAM_LBT_RSSI,			// listen before talk threshold
+	PARAM_PLACEHOLDER1,		// Placeholder for 3DRRadio GUI (PARAM_DUTY_CYCLE)
+	PARAM_PLACEHOLDER2,		// Placeholder for 3DRRadio GUI (PARAM_LBT_RSSI)
 	PARAM_MANCHESTER,		// enable manchester encoding
 	PARAM_RTSCTS,			// enable hardware flow control
-	PARAM_MAX_WINDOW,		// The maximum window size allowed
+	PARAM_MAIN_FREQ,		// Override BOARD_FREQUENCY_REG with 0x43, 0x47, 0x86 or 0x91
 	PARAM_MAX			// must be last
 };
 

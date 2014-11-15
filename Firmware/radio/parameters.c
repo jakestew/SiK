@@ -40,6 +40,7 @@
 ///
 
 
+#include "board_info.h"
 #include "radio.h"
 //#include "tdm.h"
 #include <flash_layout.h>
@@ -61,11 +62,11 @@ __code const struct parameter_info {
 	{"MIN_FREQ",		0},
 	{"MAX_FREQ",		0},
 	{"NUM_CHANNELS",	0},
-	{"DUTY_CYCLE",		0},
-	{"LBT_RSSI",		0},
+	{"PLACEHOLDER",		0},		// Placeholder for 3DRRadio GUI (DUTY_CYCLE)
+	{"PLACEHOLDER",		0},		// Placeholder for 3DRRadio GUI (LBT_RSSI)
 	{"MANCHESTER",		0},
 	{"RTSCTS",		0},
-	{"MAX_WINDOW",		0}
+	{"MAIN_FREQ",		FREQ_NONE}	// Don't override by default
 };
 
 /// In-RAM parameter store.
@@ -124,7 +125,7 @@ param_check(__pdata enum ParamID id, __data uint32_t val)
 		if (val < 2)
 			return false;
 		break;
-
+/*
 	case PARAM_MAX_WINDOW:
 		// 131 milliseconds == 0x1FFF 16 usec ticks,
 		// which is the maximum we can handle with a 13
@@ -132,7 +133,7 @@ param_check(__pdata enum ParamID id, __data uint32_t val)
 		if (val > 131)
 			return false;
 		break;
-				
+*/
 	default:
 		// no sanity check for this value
 		break;

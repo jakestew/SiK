@@ -218,7 +218,7 @@ main(void)
 	// Stash board info from the bootloader before we let anything touch
 	// the SFRs.
 	//
-	g_board_frequency = BOARD_FREQUENCY_REG;
+	//g_board_frequency = BOARD_FREQUENCY_REG;
 	g_board_bl_version = BOARD_BL_VERSION_REG;
 
 	// try to load parameters; set them to defaults if that fails.
@@ -233,6 +233,18 @@ main(void)
 	feature_set_channel = param_get(PARAM_SETCHANNEL)?true:false;
 	feature_golay = param_get(PARAM_ECC)?true:false;
 	feature_rtscts = param_get(PARAM_RTSCTS)?true:false;
+
+	// Parameter to override the bootloader BOARD_FREQUENCY_REG
+	g_board_frequency = param_get(PARAM_MAIN_FREQ);
+	switch(g_board_frequency) {
+		case FREQ_433:
+		case FREQ_470:
+		case FREQ_868:
+		case FREQ_915:
+			break;
+		default: // Don't override (the default parameter value is FREQ_NONE)
+			g_board_frequency = BOARD_FREQUENCY_REG;
+	}
 
 	// Do hardware initialisation.
 	hardware_init();
