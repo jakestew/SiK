@@ -41,7 +41,7 @@
 //#include "tdm.h"
 #include "timer.h"
 //#include "freq_hopping.h"
-#define MAX_FREQ_CHANNELS 200
+#define MAX_FREQ_CHANNELS 250
 __pdata uint8_t num_fh_channels;
 
 #define TX_DELAY_TICKS (2000 / 16)		// 2ms
@@ -112,6 +112,9 @@ transparent_serial_loop(void) {
 	__pdata uint8_t noise = 0;
 	__pdata uint8_t transmit_channel = 0;
 	__pdata uint8_t receive_channel = 0;
+	__pdata uint8_t rssi_start;
+	__pdata uint8_t rssi_len;
+	__pdata uint8_t i;
 
 	for(;;) {
 
@@ -167,6 +170,16 @@ transparent_serial_loop(void) {
 							radio_set_channel(buf[0]);
 							buf[0] = radio_current_rssi();
 							serial_write_buf(buf, 1);
+
+						// A two byte serial frame is used to get the RSSI of multiple channels
+						} else if(serial_len == 2 && buf[1] && buf[0] + buf[1] <= num_fh_channels) {
+							rssi_start = buf[0];
+							rssi_len = buf[1];
+							for(i = 0; i < rssi_len; i++) {
+								radio_set_channel(rssi_start + i);
+								buf[i] = radio_current_rssi();
+							}
+							serial_write_buf(buf, i);
 						}
 
 					// No feature_set_channel
@@ -189,6 +202,8 @@ transparent_serial_loop(void) {
 		} else if(radio_receive_packet(&radio_len, buf)) {
 			rssi = radio_last_rssi();
 			noise = radio_current_rssi();
+
+			// A tiny AT_TEST_RSSI implementation
 			if(at_testmode == AT_TEST_RSSI) {
 				printf("RS%u NO%u ER%u CE%u CP%u\n",
 					rssi,
@@ -403,7 +418,7 @@ radio_init(void)
 		freq_min = 915000000UL;
 		freq_max = 928000000UL;
 		txpower = 20;
-		num_fh_channels = MAX_FREQ_CHANNELS;
+		num_fh_channels = 50;
 		break;
 	default:
 		freq_min = 0;
