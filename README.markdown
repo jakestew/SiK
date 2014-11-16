@@ -2,42 +2,48 @@
 
 ### Serveurperso branch specification
 
- - This is a modified 3DR Radio firmware intended for real time data streaming with high frame rate and low latency.
- - Original Time Division Duplex (TDD) and Frequency Hopping Spread Spectrum (FHSS) code are removed, resulting a huge performance improvement in this case.
- - It offers a easy access through serial port to all most interesting features of the Si4432 (EZRadioPRO transceiver).
+This is a modified 3DR Radio firmware intended for real time data streaming with high frame rate and low latency.
+Original Time Division Duplex (TDD) and Frequency Hopping Spread Spectrum (FHSS) code are removed, resulting a huge performance improvement in this case.
+It offers a easy access through serial port to all most interesting features of the Si4432 (EZRadioPRO transceiver).
+
  - Advantages over RFM22 are reliability, no CPU time consumed (on hardware UART) and no memory used (no library needed on Arduino).
  - Advantages over XBee are better latency performance, better frequency choice, no transmit duty cycle limitation and open source.
  - The 3DRRadio configurator tool can be used but some parameters are changed or removed.
 
 ### Changes in features
 
- - "Baud", "Air Speed", "Net ID", "Tx Power", "ECC", "Min Freq", "Max Freq", "# of Channels", "RTS CTS" work as the master branch.
- - "Duty Cycle" and "LBT Rssi" are not currently used.
+"Baud", "Air Speed", "Net ID", "Tx Power", "ECC", "Min Freq", "Max Freq", "# of Channels", "RTS CTS" work as the master branch.
+"Duty Cycle" and "LBT Rssi" are not currently used.
 
 ### "Mavlink" replaced with "RSSI Reporting"
+
+With remote and local RSSI reporting enabled, you will get four supplementary bytes for each frames received on your ground station.
+Byte order is remoteRssi, remoteNoise, localRssi and localNoise.
 
  - Select "RawData" to disable this feature and make a transparent serial link.
  - Select "Mavlink" to add two RSSI reporting bytes at end of each transmitted frames (useful on each remote modem).
  - Select "LowLatency" to add two RSSI reporting bytes over the serial port for each received frames (useful on the local modem).
- - With remote and local RSSI reporting enabled, you will get four supplementary bytes for each frames received on your ground station.
- - Byte order is remoteRssi, remoteNoise, localRssi and localNoise.
 
 ### "Op Resend" replaced with "Set Channel"
 
- - If this feature is disabled then the transmit and receive frequencies are the same, equal to "Min Freq" (transparent serial link).
- - If enabled, you can transmit and receive on different channels, communicate with multiple isolated networks, make frequency hopping, all controlled by your main program.
- - You can define up to 200 channels using "Min Freq", "Max Freq" and "# of Channels".
- - Just add two supplementary bytes at the end of each frame you want to transmit, they're not transmitted to the other radios.
- - The first byte is used to set the channel immediately before the transmit, the second one is used after transmit to set the receive channel.
- - To sum up, a three bytes frame transmit the byte0 on channel byte1 and switch to the receive state on channel byte2.
+If this feature is disabled then the transmit and receive frequencies are the same, equal to "Min Freq" (transparent serial link).
+If enabled, you can transmit and receive on different channels, communicate with multiple isolated networks, make frequency hopping, all controlled by your main program.
+You can define up to 200 channels using "Min Freq", "Max Freq" and "# of Channels".
+Just add two supplementary bytes at the end of each frame you want to transmit, they're not transmitted to the other radios.
+The first byte is used to set the channel immediately before the transmit, the second one is used after transmit to set the receive channel.
+To sum up, a three bytes frame transmit the byte0 on channel byte1 and switch to the receive state on channel byte2.
+
  - An one byte frame can by used to change the current receive channel and a noise level byte is answered.
- - A two byte frame can by used to get the noise level of multiple channels (start and length bytes), this is an useful feature to make scanners or spectrum analysers.
+ - A two byte frame can by used to get the noise level of multiple channels (start and length bytes), this is an useful feature to make scanners or spectrum analysers
+
+https://www.youtube.com/watch?v=8-vTnMoVFL8
 
 ### "Max Window (ms)" replaced with "Bootloader Main Frequency Override"
 
- - Override the frequency band defined by the bootloader.
+Override the frequency band defined by the bootloader.
+Warning, the use of a different frequency band than that provided by the matching stage of your board results in a dramatic performance loss!
+
  - Valid values are 67 (0x43) for the 433MHz band, 71 (0x47) for the 470MHz band, 134 (0x86) for the 868MHz band, and 145 (0x91) for the 915MHz band.
- - Warning, the use of a different frequency band than that provided by the matching stage of your board results in a dramatic performance loss!
 
 ### End of Serveurperso branch specification
 
