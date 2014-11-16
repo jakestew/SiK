@@ -165,7 +165,7 @@ transparent_serial_loop(void) {
 							}
 
 							if(transmit_channel < num_fh_channels)
-								radio_set_channel_delay(transmit_channel);
+								radio_set_channel(transmit_channel);
 
 							LED_RADIO = LED_ON;
 							radio_transmit(serial_len, buf, TX_TIMEOUT_TICKS);
