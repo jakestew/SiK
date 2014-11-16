@@ -100,6 +100,15 @@ uint8_t feature_rssi_monitoring;
 bool feature_rtscts;
 
 static void
+radio_set_channel_delay(uint8_t channel) {
+	__pdata uint16_t radio_set_channel_time;
+
+	radio_set_channel(channel);
+	radio_set_channel_time = timer2_tick();
+	while(timer2_tick() - radio_set_channel_time < 400 / 16);	// 400uS delay for PLL stabilization
+}
+
+static void
 transparent_serial_loop(void) {
 	__pdata uint16_t rx_time = 0;
 	bool tx_enabled = false;
@@ -107,7 +116,7 @@ transparent_serial_loop(void) {
 	__pdata uint8_t old_serial_len = 0;
 	__pdata uint8_t radio_len;
 	__pdata uint16_t serial_time = 0;
-	__xdata uint8_t buf[MAX_PACKET_LENGTH + 2]; // Local RSSI monitoring need two bytes
+	__xdata uint8_t buf[MAX_PACKET_LENGTH + 2];			// Local RSSI monitoring need two bytes
 	__pdata uint8_t rssi = 0;
 	__pdata uint8_t noise = 0;
 	__pdata uint8_t transmit_channel = 0;
@@ -129,7 +138,7 @@ transparent_serial_loop(void) {
 
 		if(tx_enabled) {
 			serial_len = serial_read_available();
-			if(serial_len > MAX_PACKET_LENGTH - 2) // Remote RSSI monitoring need two bytes
+			if(serial_len > MAX_PACKET_LENGTH - 2)		// Remote RSSI monitoring need two bytes
 				serial_len = MAX_PACKET_LENGTH - 2;
 
 			if(serial_len != old_serial_len)
@@ -156,7 +165,7 @@ transparent_serial_loop(void) {
 							}
 
 							if(transmit_channel < num_fh_channels)
-								radio_set_channel(transmit_channel);
+								radio_set_channel_delay(transmit_channel);
 
 							LED_RADIO = LED_ON;
 							radio_transmit(serial_len, buf, TX_TIMEOUT_TICKS);
@@ -167,7 +176,7 @@ transparent_serial_loop(void) {
 
 						// An one byte serial frame is used to get the RSSI of the channel
 						} else if(serial_len == 1) {
-							radio_set_channel(buf[0]);
+							radio_set_channel_delay(buf[0]);
 							buf[0] = radio_current_rssi();
 							serial_write_buf(buf, 1);
 
@@ -176,7 +185,7 @@ transparent_serial_loop(void) {
 							rssi_start = buf[0];
 							rssi_len = buf[1];
 							for(i = 0; i < rssi_len; i++) {
-								radio_set_channel(rssi_start + i);
+								radio_set_channel_delay(rssi_start + i);
 								buf[i] = radio_current_rssi();
 							}
 							serial_write_buf(buf, i);
