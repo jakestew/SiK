@@ -46,7 +46,7 @@ __pdata uint8_t num_fh_channels;
 
 #define TX_DELAY_TICKS (2000 / 16)		// 2ms
 #define SERIAL_TIMEOUT_TICKS (1000 / 16)	// 1ms
-#define TX_TIMEOUT_TICKS (100000 / 16)		// 100ms
+#define TX_TIMEOUT_TICKS (1000000 / 16)		// 1s
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @name	Interrupt vector prototypes
@@ -113,7 +113,7 @@ transparent_serial_loop(void) {
 	__pdata uint16_t rx_time = 0;
 	bool tx_enabled = false;
 	__pdata uint16_t serial_len;
-	__pdata uint8_t old_serial_len = 0;
+	__pdata uint16_t old_serial_len = 0;
 	__pdata uint8_t radio_len;
 	__pdata uint16_t serial_time = 0;
 	__xdata uint8_t buf[MAX_PACKET_LENGTH + 2];			// Local RSSI monitoring need two bytes
@@ -138,9 +138,6 @@ transparent_serial_loop(void) {
 
 		if(tx_enabled) {
 			serial_len = serial_read_available();
-			if(serial_len > MAX_PACKET_LENGTH - 2)		// Remote RSSI monitoring need two bytes
-				serial_len = MAX_PACKET_LENGTH - 2;
-
 			if(serial_len != old_serial_len)
 				serial_time = timer2_tick();
 			old_serial_len = serial_len;
@@ -148,8 +145,16 @@ transparent_serial_loop(void) {
 			// If no more data come from the serial port after a short time
 			if(serial_len && timer2_tick() - serial_time > SERIAL_TIMEOUT_TICKS) {
 
+				// Flush an oversized packet (remote RSSI monitoring need two bytes)
+				if(feature_golay && serial_len > MAX_PACKET_LENGTH / 2 - 6 - 2 ||
+					!feature_golay && serial_len > MAX_PACKET_LENGTH - 2) {
+					while(serial_read_available())
+						serial_read();
+					serial_len = 0;
+				}
+
 				// Read the serial port and transmit
-				if(serial_read_buf(buf, serial_len)) {
+				if(serial_len && serial_read_buf(buf, serial_len)) {
 
 					if(feature_set_channel) {
 
