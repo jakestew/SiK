@@ -36,7 +36,7 @@ To sum up, a three bytes frame transmit the byte0 on channel byte1 and switch to
  - An one byte frame can by used to change the current receive channel and a noise level byte is answered.
  - A two byte frame can by used to get the noise level of multiple channels (start and length bytes), this is an useful feature to make scanners or spectrum analysers
 
-https://www.youtube.com/watch?v=8-vTnMoVFL8
+https://www.youtube.com/watch?v=3v44Nj9NZCc
 
 ### "Max Window (ms)" replaced with "Bootloader Main Frequency Override"
 
