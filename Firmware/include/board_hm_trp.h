@@ -122,7 +122,7 @@ SBIT(PIN_ENABLE,   SFR_P0, 3);
 
 // External RF switch
 #define SWITCH_CONTROL1	PIN_ENABLE	// always an output
-#define SWITCH_CONTROL2	PIN_CONFIG	// always an output
+#define SWITCH_CONTROL2	PIN_CONFIG	// input in bootloader, output in app
 
 // board-specific hardware config
 #define HW_INIT							\
