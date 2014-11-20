@@ -173,7 +173,19 @@ transparent_serial_loop(void) {
 								radio_set_channel(transmit_channel);
 
 							LED_RADIO = LED_ON;
+#ifdef SWITCH_CONTROL2
+							SWITCH_CONTROL2 = false;
+#endif
+#ifdef SWITCH_CONTROL1
+							SWITCH_CONTROL1 = true;
+#endif
 							radio_transmit(serial_len, buf, TX_TIMEOUT_TICKS);
+#ifdef SWITCH_CONTROL1
+							SWITCH_CONTROL1 = false;
+#endif
+#ifdef SWITCH_CONTROL2
+							SWITCH_CONTROL2 = true;
+#endif
 							LED_RADIO = LED_OFF;
 
 							if(receive_channel < num_fh_channels)
@@ -204,7 +216,19 @@ transparent_serial_loop(void) {
 						}
 
 						LED_RADIO = LED_ON;
+#ifdef SWITCH_CONTROL2
+						SWITCH_CONTROL2 = false;
+#endif
+#ifdef SWITCH_CONTROL1
+						SWITCH_CONTROL1 = true;
+#endif
 						radio_transmit(serial_len, buf, TX_TIMEOUT_TICKS);
+#ifdef SWITCH_CONTROL1
+						SWITCH_CONTROL1 = false;
+#endif
+#ifdef SWITCH_CONTROL2
+						SWITCH_CONTROL2 = true;
+#endif
 						LED_RADIO = LED_OFF;
 					}
 
