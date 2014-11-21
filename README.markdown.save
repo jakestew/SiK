@@ -15,7 +15,7 @@ It offers a easy access through serial port to all most interesting features of 
 "Baud", "Air Speed", "Net ID", "Tx Power", "ECC", "Min Freq", "Max Freq", "# of Channels", "RTS CTS" work as the master branch.
 "Duty Cycle" and "LBT Rssi" are not currently used.
 
-By default on HM-TRP, the RTS and CTS pins are used to drive external RF switches from the bidirectionnal amplifier
+On HM-TRP by default, RTS and CTS pins are used to drive an external RF switch
 
 ### "Mavlink" replaced with "RSSI Reporting"
 
