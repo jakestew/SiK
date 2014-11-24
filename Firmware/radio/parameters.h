@@ -52,7 +52,7 @@ enum ParamID {
         PARAM_NETID,			// network ID
         PARAM_TXPOWER,			// transmit power (dBm)
         PARAM_ECC,			// ECC using golay encoding
-	PARAM_RSSIMONITORING,		// RSSI monitoring, 0=none, 1=remote, 2=local
+	PARAM_RSSIMONITORING,		// RSSI monitoring: 0 to disable, 1 to add it over radio and 2 to add it over serial
 	PARAM_SETCHANNEL,		// The last two bytes of the serial frame are used to set the RF channel
 	PARAM_MIN_FREQ,			// min frequency in MHz
 	PARAM_MAX_FREQ,			// max frequency in MHz

@@ -109,14 +109,34 @@ radio_set_channel_delay(uint8_t channel) {
 }
 
 static void
+radio_transmit_switch(uint8_t length, __xdata uint8_t * __pdata buf, __pdata uint16_t timeout_ticks) {
+	LED_RADIO = LED_ON;
+	#ifdef SWITCH_CONTROL2
+		SWITCH_CONTROL2 = false;
+	#endif
+	#ifdef SWITCH_CONTROL1
+		SWITCH_CONTROL1 = true;
+	#endif
+	radio_transmit(length, buf, timeout_ticks);
+	#ifdef SWITCH_CONTROL1
+		SWITCH_CONTROL1 = false;
+	#endif
+	#ifdef SWITCH_CONTROL2
+		SWITCH_CONTROL2 = true;
+	#endif
+	LED_RADIO = LED_OFF;
+}
+
+static void
 transparent_serial_loop(void) {
 	__pdata uint16_t rx_time = 0;
 	bool tx_enabled = false;
 	__pdata uint16_t serial_len;
 	__pdata uint16_t old_serial_len = 0;
+	__pdata uint8_t max_serial_len;
 	__pdata uint8_t radio_len;
 	__pdata uint16_t serial_time = 0;
-	__xdata uint8_t buf[MAX_PACKET_LENGTH + 2];			// Local RSSI monitoring need two bytes
+	__xdata uint8_t buf[MAX_PACKET_LENGTH + 2];			// Local RSSI monitoring add two bytes over serial
 	__pdata uint8_t rssi = 0;
 	__pdata uint8_t noise = 0;
 	__pdata uint8_t transmit_channel = 0;
@@ -145,9 +165,18 @@ transparent_serial_loop(void) {
 			// If no more data come from the serial port after a short time
 			if(serial_len && timer2_tick() - serial_time > SERIAL_TIMEOUT_TICKS) {
 
-				// Flush an oversized packet (remote RSSI monitoring need two bytes)
-				if(feature_golay && serial_len > MAX_PACKET_LENGTH / 2 - 6 - 2 ||
-					!feature_golay && serial_len > MAX_PACKET_LENGTH - 2) {
+				// Calculation of max_serial_len
+				if(feature_golay)
+					max_serial_len = MAX_PACKET_LENGTH / 2 - 6;
+				else
+					max_serial_len = MAX_PACKET_LENGTH;
+				if(feature_rssi_monitoring == 1)
+					max_serial_len -= 2;		// Remote RSSI monitoring add two bytes over radio
+				if(feature_set_channel)
+					max_serial_len += 2;		// This feature cut two bytes from serial buffer
+
+				// Flush an oversized packet
+				if(serial_len > max_serial_len) {
 					while(serial_read_available())
 						serial_read();
 					serial_len = 0;
@@ -171,31 +200,9 @@ transparent_serial_loop(void) {
 
 							if(transmit_channel < num_fh_channels)
 								radio_set_channel(transmit_channel);
-
-							LED_RADIO = LED_ON;
-#ifdef SWITCH_CONTROL2
-							SWITCH_CONTROL2 = false;
-#endif
-#ifdef SWITCH_CONTROL1
-							SWITCH_CONTROL1 = true;
-#endif
-							radio_transmit(serial_len, buf, TX_TIMEOUT_TICKS);
-#ifdef SWITCH_CONTROL1
-							SWITCH_CONTROL1 = false;
-#endif
-#ifdef SWITCH_CONTROL2
-							SWITCH_CONTROL2 = true;
-#endif
-							LED_RADIO = LED_OFF;
-
+							radio_transmit_switch(serial_len, buf, TX_TIMEOUT_TICKS);
 							if(receive_channel < num_fh_channels)
 								radio_set_channel(receive_channel);
-
-						// An one byte serial frame is used to get the RSSI of the channel
-						} else if(serial_len == 1) {
-							radio_set_channel_delay(buf[0]);
-							buf[0] = radio_current_rssi();
-							serial_write_buf(buf, 1);
 
 						// A two byte serial frame is used to get the RSSI of multiple channels
 						} else if(serial_len == 2 && buf[1] && buf[0] + buf[1] <= num_fh_channels) {
@@ -206,7 +213,10 @@ transparent_serial_loop(void) {
 								buf[i] = radio_current_rssi();
 							}
 							serial_write_buf(buf, i);
-						}
+
+						// An one byte serial frame is transmitted on the current channel
+						} else if(serial_len == 1)
+							radio_transmit_switch(1, buf, TX_TIMEOUT_TICKS);
 
 					// No feature_set_channel
 					} else {
@@ -214,22 +224,7 @@ transparent_serial_loop(void) {
 							buf[serial_len++] = rssi;
 							buf[serial_len++] = noise;
 						}
-
-						LED_RADIO = LED_ON;
-#ifdef SWITCH_CONTROL2
-						SWITCH_CONTROL2 = false;
-#endif
-#ifdef SWITCH_CONTROL1
-						SWITCH_CONTROL1 = true;
-#endif
-						radio_transmit(serial_len, buf, TX_TIMEOUT_TICKS);
-#ifdef SWITCH_CONTROL1
-						SWITCH_CONTROL1 = false;
-#endif
-#ifdef SWITCH_CONTROL2
-						SWITCH_CONTROL2 = true;
-#endif
-						LED_RADIO = LED_OFF;
+						radio_transmit_switch(serial_len, buf, TX_TIMEOUT_TICKS);
 					}
 
 					radio_receiver_on();

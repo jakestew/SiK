@@ -30,12 +30,12 @@ Byte order is remoteRssi, remoteNoise, localRssi and localNoise.
 
 If this feature is disabled then the transmit and receive frequencies are the same, equal to "Min Freq" (transparent serial link).
 If enabled, you can transmit and receive on different channels, communicate with multiple isolated networks, make frequency hopping, all controlled by your main program.
-You can define up to 200 channels using "Min Freq", "Max Freq" and "# of Channels".
+You can define up to 250 channel frequencies using "Min Freq", "Max Freq" and "# of Channels".
 Just add two supplementary bytes at the end of each frame you want to transmit, they're not transmitted to the other radios.
 The first byte is used to set the channel immediately before the transmit, the second one is used after transmit to set the receive channel.
 To sum up, a three bytes frame transmit the byte0 on channel byte1 and switch to the receive state on channel byte2.
 
- - An one byte frame can by used to change the current receive channel and a noise level byte is answered.
+ - An one byte frame is transmitted as is on the current channel.
  - A two byte frame can by used to get the noise level of multiple channels (start and length bytes), this is an useful feature to make scanners or spectrum analysers
 
 https://www.youtube.com/watch?v=3v44Nj9NZCc
