@@ -4,7 +4,7 @@
 import serial, sys, optparse
 
 parser = optparse.OptionParser("reflector")
-parser.add_option("--baudrate", type='int', default=57600, help='baud rate')
+parser.add_option("--baudrate", type='int', default=115200, help='baud rate')
 parser.add_option("--echo", action='store_true', default=False, help='echo to stdout')
 parser.add_option("--rtscts", action='store_true', default=False, help='enable rtscts')
 parser.add_option("--dsrdtr", action='store_true', default=False, help='enable dsrdtr')

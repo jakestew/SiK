@@ -4,7 +4,7 @@
 import serial, sys, optparse, time, fdpexpect
 
 parser = optparse.OptionParser("set_speed")
-parser.add_option("--baudrate", type='int', default=57600, help='baud rate')
+parser.add_option("--baudrate", type='int', default=115200, help='baud rate')
 parser.add_option("--cmd", action='append', default=[], help='at command')
 parser.add_option("--reset", action='store_true', help='reset after set')
 parser.add_option("--write", action='store_true', help='write after set')

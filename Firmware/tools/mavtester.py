@@ -10,7 +10,7 @@ from optparse import OptionParser
 parser = OptionParser("mavtester.py [options]")
 
 parser.add_option("--baudrate", type='int',
-                  help="connection baud rate", default=57600)
+                  help="connection baud rate", default=115200)
 parser.add_option("--port1", default=None, help="serial port 1")
 parser.add_option("--port2", default=None, help="serial port 2")
 parser.add_option("--rate", default=4, type='float', help="initial stream rate")

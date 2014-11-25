@@ -95,7 +95,7 @@ class uploader(object):
 	READ_MULTI_MAX	= 255
 	BANK_PROGRAMING = -1
 
-	def __init__(self, portname, atbaudrate=57600, use_mavlink=False, mavport=0, debug=0):
+	def __init__(self, portname, atbaudrate=115200, use_mavlink=False, mavport=0, debug=0):
 		print("Connecting to %s" % portname)
                 if use_mavlink:
                         from pymavlink import mavutil
@@ -385,7 +385,7 @@ if __name__ == '__main__':
         parser = argparse.ArgumentParser(description="Firmware uploader for the SiK radio system.")
         parser.add_argument('--port', action="store", help="port to upload to")
         parser.add_argument('--resetparams', action="store_true", help="reset all parameters to defaults")
-        parser.add_argument("--baudrate", type=int, default=57600, help='baud rate')
+        parser.add_argument("--baudrate", type=int, default=115200, help='baud rate')
 	parser.add_argument('--forceBanking', action="store_true", help="force the programmer to use 24bit addressing")
         parser.add_argument("--mavlink", action='store_true', default=False, help='update over MAVLink')
         parser.add_argument("--mavport", type=int, default=0, help='MAVLink port number')

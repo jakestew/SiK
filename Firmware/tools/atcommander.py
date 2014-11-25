@@ -54,7 +54,7 @@ class ATCommandSet(object):
     ### Internals ###
     
     # Create object and immediate attempt to connect to radio
-    def __init__(self, device, baudrate=57600, debug=False,
+    def __init__(self, device, baudrate=115200, debug=False,
                  dsrdtr=False, rtscts=False, xonxoff=False):
         # Initialize object data members
         self.is_command = False		# Track if we've entered command mode
@@ -244,7 +244,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Change settings on local and remote radio.',
                                      epilog="Settable parameters (can use multiple --set-*): %s" % \
                                             " ".join(sorted(param_map.keys())))
-    parser.add_argument("--baudrate", type=int, default=57600, help='connect at baud rate')
+    parser.add_argument("--baudrate", type=int, default=115200, help='connect at baud rate')
     parser.add_argument("--rtscts", action='store_true', default=False, help='connect using rtscts')
     parser.add_argument("--dsrdtr", action='store_true', default=False, help='connect using dsrdtr')
     parser.add_argument("--xonxoff", action='store_true', default=False, help='connect using xonxoff')
