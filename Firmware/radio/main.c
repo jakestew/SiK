@@ -44,8 +44,10 @@
 #define MAX_FREQ_CHANNELS 250
 __pdata uint8_t num_fh_channels;
 
-#define TX_DELAY_TICKS (2000 / 16)		// 2ms
-#define SERIAL_TIMEOUT_TICKS (1000 / 16)	// 1ms
+// Hardcoded timing values:(
+#define SERIAL_TIMEOUT_TICKS (1000 / 16)	// 1ms for 115kbps
+#define TX_DELAY_TICKS (5000 / 16)		// 5ms for 8kbps
+#define PLL_DELAY_TICKS (800 / 16)		// 800us for 8kbps
 #define TX_TIMEOUT_TICKS (1000000 / 16)		// 1s
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -105,7 +107,7 @@ radio_set_channel_delay(uint8_t channel) {
 
 	radio_set_channel(channel);
 	radio_set_channel_time = timer2_tick();
-	while(timer2_tick() - radio_set_channel_time < 400 / 16);	// 400uS delay for PLL stabilization
+	while(timer2_tick() - radio_set_channel_time < PLL_DELAY_TICKS);	// Delay for PLL stabilization
 }
 
 static void
