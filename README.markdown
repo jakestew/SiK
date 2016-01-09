@@ -1,5 +1,13 @@
 # SiK - Firmware for SiLabs Si1000 ISM radios
 
+### JakeStew Tuning branch
+SiK v1.9 firmware with only one value on one line 151 of board_hm_trp.h changed...
+#define EZRADIOPRO_OSC_CAP_VALUE 0xCC   // Measured value on 3DR/HM-TRP 900MHz modules
+
+Also a firmware for tuning the value.  To be explained later.
+-Jake
+
+
 ### Serveurperso branch specification
 
 This is a modified 3DR Radio firmware intended for real time data streaming with high frame rate and low latency.
