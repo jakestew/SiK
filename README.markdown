@@ -5,8 +5,18 @@ SiK v1.9 firmware with only one value on one line 151 of board_hm_trp.h changed.
 
 . #define EZRADIOPRO_OSC_CAP_VALUE 0xCC   // Measured value on 3DR/HM-TRP 900MHz modules
 
-Also a firmware for tuning the value.  To be explained later...
+Also a firmware for tuning the value.  Based on v1.9 with added AT commands...
+
+Jake_Tune_Adjuster.ihx
+
+ATJ - Displays some info, no other effect
+ATK - Transmit beacon on 925.000 MHz (switches to beacon mode)
+ATU - Frequency UP (Lowers EZRADIOPRO_OSC_CAP_VALUE)
+ATY - Freqeuncy DOWN (Raises EZRADIOPRO_OSC_CAP_VALUE)
+
+
 -Jake
+
 
 
 # SiK - Firmware for SiLabs Si1000 ISM radios
